@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="tr">
 <head>
@@ -1848,6 +1849,8 @@ function renderAtlas(){
 
 /* ---------------- drawer ---------------- */
 function openDrawer(i){
+  if(!window.LAIBookGate?.permit(i,()=>openDrawer(i)))return;
+
   if(W[i]?.slug==='atolye'){window.LAIWorkshop?.open(lang);return;}
   if(W[i]?.slug==='deep'){window.LAIDeep?.open(lang);return;}
   if(W[i]?.slug==='mlops'){window.LAIMLOps?.open(lang);return;}
@@ -1963,6 +1966,7 @@ function build(){
 }
 function setLang(l){if(l===lang)return;lang=l;applyText();renderHud();renderAtlas();setStateUI();if(!busy&&opened)renderIsles('static');if(openIdx>=0)openDrawer(openIdx);window.LAIAcademy?.syncLanguage(l);window.LAIAgents?.syncLanguage(l);window.LAINLP?.syncLanguage(l);window.LAIML?.syncLanguage(l);window.LAIWorkshop?.syncLanguage(l);window.LAIDeep?.syncLanguage(l);window.LAIMLOps?.syncLanguage(l);window.LAIMCPRAG?.syncLanguage(l);window.LAIHybrid?.syncLanguage(l);window.LAIPrompt?.syncLanguage(l)}
 
+window.LAIWorldOpenByBook=(i)=>{finishIntro();openDrawer(i);};
 build();parallax();
 const heroSky=skyCanvas($('#sky'),{motes:26});
 new IntersectionObserver(([e])=>{const st=$('#stage');if(e.isIntersecting){heroSky.start();st.classList.remove('paused');st.querySelectorAll('svg').forEach(s=>s.unpauseAnimations&&s.unpauseAnimations())}
@@ -7663,5 +7667,69 @@ window.LAIDataLab={scenes:scenes.map(s=>s.id),version:'2026.10'};
 })();
 
 </script>
+
+<style id="lai-book-gate-style">
+#lai-book-gate{position:fixed;z-index:10000;inset:0;display:grid;place-items:center;padding:20px;background:rgba(5,15,35,.76);backdrop-filter:blur(11px);font-family:Manrope,system-ui,sans-serif}#lai-book-gate[hidden]{display:none}#lai-book-gate .lai-shell{width:min(530px,100%);padding:clamp(25px,4vw,42px);border-radius:20px;background:#fcfbf5;color:#18354b;box-shadow:0 20px 80px #0008;border:1px solid #e3d3b4;position:relative}#lai-book-gate h2{font:700 clamp(25px,4vw,36px) Georgia,serif;margin:13px 0;color:#173c50}#lai-book-gate .lai-eyebrow{font-size:11px;font-weight:800;letter-spacing:.17em;color:#0a7985}#lai-book-gate p{line-height:1.7;font-size:14px;color:#4b6472}#lai-book-gate label{display:block;font-size:13px;font-weight:700;margin:19px 0 8px}#lai-book-gate input{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#18354b;background:#fff;border:1px solid #8baeb1;padding:13px 14px;border-radius:10px;width:100%;font-size:19px;letter-spacing:.04em;text-transform:uppercase}#lai-book-gate button{cursor:pointer}#lai-book-gate .lai-submit{margin-top:14px;border:0;background:#0b5971;color:white;border-radius:100px;padding:13px 24px;font-weight:800}#lai-book-gate .lai-close{position:absolute;right:14px;top:12px;border:none;background:transparent;color:#506875;font-size:26px}#lai-book-gate .lai-status{min-height:25px;margin-top:13px;color:#a33b29;font-size:13px}#lai-book-gate .lai-submit:disabled{opacity:.55;cursor:wait}#lai-book-gate .lai-code-wrap{display:flex;position:relative;align-items:center}#lai-book-gate .lai-code-wrap input{padding-right:63px;-webkit-text-security:disc}#lai-book-gate .lai-code-wrap input[type=text]{-webkit-text-security:none}#lai-book-gate .lai-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:1px solid #c4d5d1;border-radius:9px;background:#f3f8f5;color:#254b5c;width:46px;height:42px;display:grid;place-items:center;touch-action:none}#lai-book-gate .lai-eye:hover{background:#e4f1ed}#lai-book-gate .lai-eye svg{width:21px;height:21px;pointer-events:none}#lai-book-gate .lai-eye:focus-visible{outline:2px solid #147684;outline-offset:2px}#lai-book-gate .lai-hint{font-size:12px;color:#526c72;margin:7px 0 0}
+</style>
+
+<script id="lai-book-gate-script">
+/* L’AI’brary — original portal preserved. No plaintext book codes or server secrets here.
+ * Static mode uses slow password verifiers only; because the labs are inside the HTML,
+ * do not present static mode as copy protection or real authorization. For that, deploy Worker + private server resources. */
+(()=>{'use strict';
+const WORLD_NAMES=["Yapay Zekâ Atölyesi", "Veri Akademisi", "Arama Adaları", "Yapay Zekâ Ajanları", "Doğal Dil İşleme", "Makine Öğrenmesi", "Derin Öğrenme", "MLOps", "Bilgisayarlı Görme", "MCP ve Gelişmiş RAG", "Görünmez Yapay Zekâ ve Otonom İşletmeler", "Hibrit Zekâ ve İnsan–AI İş Birliği", "Prompt Mühendisliği ve Üretken Yapay Zekâ", "Yapay Zekâ Riskleri, Etik ve Gelecek"];
+const API_ORIGIN=''; // Publisher: supply your HTTPS Cloudflare Worker origin; it is public, never a secret.
+const EDITION='2026';
+const STATIC_VERIFIERS=[["ee1700065de200fd134854beb4028be9","6600ecfeffb3242eb4fcbee38937a9a9f4e0f43cf0fe0dc15325f39b50a543a3"],["15cdf503c63d0f6e834346c47418c32f","afae04dceffa45534e5edfd24eaa550bf0e0b58701f8fe55704e7627aaaea497"],["a6a39ef75a36d8b48a62958fbe6675bb","9b87b73e1638a0bbc9f8c924de4105f4c115cb32c76d59656b3c6f1a676ce6e1"],["5f7c836957cef56b47d23649ecb63479","786b6f046e085e06e70860ddc85ba1fda80466c7027c68f86a3a1ae886cbfa3a"],["34f57842fd6624006747b887689b5cc9","712d69cabd94010e5271d48c4d1188908296f58ac750b5f4df296c53c72d7a04"],["2fd7e46cc3f7eddf5d1991d9875b420f","0181e0428cb6fe95f6e94f128f2fa5c1a435fb153e599cc94b23f7c178473aa0"],["c090c4096bfcd4ffa1e55ad2b999c7ac","aaab6d0f00cca8c2ca6de8a07d454d8a3078efe1f4842ea0aa0dd947c4a906eb"],["4eab6872026c9b5dacade8308e1acde9","2cfe87ce561ea124e6371c04ed6c971fe462bf937f503da7e4d761277eae50c7"],["cd626233e2be2c58d554010979650c41","ff06fd907220c79d772ba0d5ac7557344676651645f7a2cf427b576b003821b2"],["012caf6cb5bc24b3804c81cabf2e104d","c90d098d12b42de4bbc81507327d4d0ef19db8b8cabdf23f9c106e90b95e7306"],["283aa1c3dc86474bb3d160b8851a7018","eaee9902d8eca41e5de309d515eafe510cab3d40d7290e5c70ca781b7bd701bf"],["d61fb3d33c351645f570d3c84dfc8d28","fe8ecdcf36fe813939cb70fed156181f0b8cb34bf3affb984c587e041d3b31ff"],["879ac378edd403554945fe760d94f9fb","cf4db1c8ac943f47fba9c126d3acb28df861101dc4097592f5db3c9376c4d211"],["0ef64cb16cf7a218ddb6fec8ebf8f454","35adb66272319ea74ab633bd41611777178287c94eb3f4c32cc29f295d0b49ae"]]; // PBKDF2 digests, NOT book codes or keys.
+const STATIC_ROUNDS=150000;
+const granted=new Set();let pending=null;let priorFocus=null;
+const $=s=>document.querySelector(s);
+const api=(suffix)=>API_ORIGIN.replace(/\/$/,'')+suffix;
+let dialog;function ensure(){if(dialog)return dialog;dialog=document.createElement('section');dialog.id='lai-book-gate';dialog.hidden=true;dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-labelledby','lai-book-gate-heading');dialog.innerHTML=`<div class="lai-shell"><button class="lai-close" type="button" aria-label="Kapat">×</button><small class="lai-eyebrow">L’AI’BRARY · KİTAP GEÇİDİ</small><h2 id="lai-book-gate-heading">Evren erişimi</h2><p class="lai-desc"></p><form><label for="lai-book-code">Kitabın bu evrenindeki erişim kodu</label><div class="lai-code-wrap"><input id="lai-book-code" type="password" minlength="11" maxlength="20" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="E02-••••-••••" aria-describedby="lai-code-hint" required><button type="button" class="lai-eye" aria-label="Görmek için basılı tut" title="Sadece basılı tutarken göster" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12s3.3-6 9-6 9 6 9 6-3.3 6-9 6-9-6-9-6Z"/><circle cx="12" cy="12" r="3"/><path class="lai-eye-slash" d="M4 20 20 4"/></svg></button></div><p class="lai-hint" id="lai-code-hint">Giriş gizlidir. Göz simgesine yalnızca basılı tutarken kod görünür; ekran kaydında basılı tutmayın.</p><button class="lai-submit" type="submit">Evrene gir</button></form><div class="lai-status" role="status" aria-live="polite"></div><p style="font-size:12px;margin-bottom:0">QR kodu veya evren bağlantısı bu girişe yönlendirir. Kod, tarayıcının kaynak dosyasında tutulmaz.</p></div>`;document.body.appendChild(dialog);dialog.querySelector('.lai-close').onclick=close;dialog.addEventListener('keydown',e=>{if(e.key==='Escape')close();});dialog.querySelector('form').addEventListener('submit',submit);
+const eye=dialog.querySelector('.lai-eye'),input=dialog.querySelector('#lai-book-code');
+const reveal=()=>{input.type='text';eye.setAttribute('aria-pressed','true');};
+const hide=()=>{input.type='password';eye.setAttribute('aria-pressed','false');};
+eye.addEventListener('pointerdown',e=>{e.preventDefault();eye.setPointerCapture?.(e.pointerId);reveal()});
+['pointerup','pointercancel','pointerleave','blur'].forEach(ev=>eye.addEventListener(ev,hide));
+eye.addEventListener('keydown',e=>{if(e.key===' '){e.preventDefault();reveal();}});
+eye.addEventListener('keyup',e=>{if(e.key===' '){e.preventDefault();hide();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)hide()});
+dialog.addEventListener('focusout',e=>{if(!dialog.contains(e.relatedTarget))hide()});
+return dialog;};
+function close(){if(dialog){dialog.hidden=true;dialog.querySelector('#lai-book-code').value='';dialog.querySelector('#lai-book-code').type='password';}document.body.style.overflow='';pending=null;if(priorFocus?.focus)priorFocus.focus();}
+function open(n,callback){if(!(n>=1&&n<=14))return;ensure();priorFocus=document.activeElement;pending={n,callback};dialog.hidden=false;document.body.style.overflow='hidden';dialog.querySelector('h2').textContent=WORLD_NAMES[n-1];dialog.querySelector('.lai-desc').textContent='Kitaptaki '+WORLD_NAMES[n-1]+' evreninin açılışındaki kısa harf–rakam kodunu girin.';dialog.querySelector('.lai-status').textContent='';dialog.querySelector('#lai-book-code').type='password';dialog.querySelector('input').value='';dialog.querySelector('input').focus();}
+function constantEqual(a,b){if(a.length!==b.length)return false;let diff=0;for(let i=0;i<a.length;i++)diff|=a[i]^b[i];return diff===0;}
+async function staticCheck(n,normalized){
+if(!globalThis.crypto?.subtle)throw Error('secure_context_required');
+const entry=STATIC_VERIFIERS[n-1];if(!entry)return false;
+const hexbytes=t=>new Uint8Array(t.match(/../g).map(h=>parseInt(h,16)));
+const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(normalized),'PBKDF2',false,['deriveBits']);
+const bytes=new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:hexbytes(entry[0]),iterations:STATIC_ROUNDS},key,256));
+return constantEqual(bytes,hexbytes(entry[1]));
+}
+async function submit(e){e.preventDefault();if(!pending)return;
+const {n,callback}=pending,st=dialog.querySelector('.lai-status'),btn=dialog.querySelector('.lai-submit'),input=dialog.querySelector('#lai-book-code');
+const normalized=input.value.trim().toUpperCase().replace(/[\s-]/g,'');
+input.type='password';const eye=dialog.querySelector('.lai-eye');eye.setAttribute('aria-pressed','false');
+if(!/^E(0[1-9]|1[0-4])[A-HJ-NP-Z2-9]{8}$/.test(normalized)||Number(normalized.slice(1,3))!==n){st.textContent='Bu evrene ait kitap kodunu kontrol edin.';return;}
+btn.disabled=true;st.textContent='Kod doğrulanıyor…';
+try {
+ if(API_ORIGIN){const pretty=normalized.slice(0,3)+'-'+normalized.slice(3,7)+'-'+normalized.slice(7);
+  const r=await fetch(api('/api/book/activate'),{method:'POST',mode:'cors',cache:'no-store',headers:{'content-type':'application/json'},body:JSON.stringify({universe:n,code:pretty,edition:EDITION})});
+  const out=await r.json();if(!r.ok||!out.token)throw Error('not_accepted');
+  sessionStorage.setItem('lai_book_session_'+n,out.token);
+ } else {
+  const good=await staticCheck(n,normalized);if(!good)throw Error('not_accepted');
+ }
+ input.value='';granted.add(n);close();callback?.();
+}catch(err){st.textContent=err?.message==='secure_context_required'?'Güvenli bağlantı (HTTPS) gereklidir.':'Kod bu evren için geçerli değil veya doğrulama servisine erişilemiyor.';}
+finally{btn.disabled=false;}
+}
+const gate={permit(i,after){const n=i+1;if(granted.has(n))return true;open(n,after);return false;},open,close};window.LAIBookGate=gate;
+// QR route is public, access code never included in URL.
+const params=new URLSearchParams(location.search);const target=params.get('evren');if(/^(0?[1-9]|1[0-4])$/.test(target||'')){const n=Number(target);const launch=()=>{if(typeof window.LAIWorldOpenByBook==='function')window.LAIWorldOpenByBook(n-1);};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>open(n,launch),{once:true});else open(n,launch);}
+})();
+</script>
+
 </body>
 </html>
